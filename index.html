@@ -1,0 +1,154 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>India Car Brands — Raw Data (Dark Futuristic)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#06070a;
+      --card:#0e1116;
+      --muted:#9aa4b2;
+      --accent1:#00f0ff;
+      --accent2:#b84bff;
+      --glass: rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#e6eef8;background:linear-gradient(180deg,var(--bg),#030305);-webkit-font-smoothing:antialiased}
+    .wrap{max-width:1100px;margin:28px auto;padding:18px}
+    header{display:flex;gap:16px;align-items:center}
+    h1{margin:0;font-size:1.6rem;font-weight:800;letter-spacing:0.4px;background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;color:transparent}
+    .sub{color:var(--muted);margin-left:auto;font-size:0.9rem}
+    .search{margin-top:18px;padding:12px 14px;width:100%;border-radius:12px;background:var(--card);border:1px solid rgba(255,255,255,0.04);color:#dbe9ff;outline:none;box-shadow:0 6px 30px rgba(0,0,0,0.6) inset}
+    .controls{display:flex;gap:10px;margin-top:12px;align-items:center}
+    .btn{padding:8px 12px;border-radius:10px;background:linear-gradient(90deg,rgba(0,240,255,0.08),rgba(184,75,255,0.06));border:1px solid rgba(255,255,255,0.04);color:var(--accent1);cursor:pointer;font-weight:600}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:20px}
+    .card{background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.02));border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03);backdrop-filter:blur(6px);box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    .logo{width:100%;height:120px;object-fit:contain;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);padding:12px}
+    .title{display:flex;align-items:center;gap:12px}
+    .brand{font-weight:700;color:#fff}
+    .model{color:var(--accent1);font-weight:600}
+    .meta{color:var(--muted);font-size:0.88rem;margin-top:8px}
+    .small{color:var(--muted);font-size:0.82rem;margin-top:8px}
+    a.link{color:var(--accent1);text-decoration:none}
+    .footer{margin-top:22px;color:var(--muted);font-size:0.86rem;text-align:center}
+    .glow{box-shadow:0 6px 30px rgba(0,240,255,0.06),0 0 12px rgba(184,75,255,0.03) inset}
+    @media (max-width:520px){.logo{height:90px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>India Car Brands — Raw Data</h1>
+      <div class="sub">Dark futuristic • Free • Live from Google Sheets</div>
+    </header>
+
+    <input id="q" class="search" placeholder="Search brand, model, category, or headquarters (e.g. Tata, Nexon, EV, Pune)">
+
+    <div class="controls">
+      <button id="refresh" class="btn glow">Refresh</button>
+      <div id="count" style="color:var(--muted);margin-left:auto">—</div>
+    </div>
+
+    <div id="list" class="grid"></div>
+
+    <div class="footer">Edit your Google Sheet and republish → site updates automatically. Keep <code>source_url</code> for attribution.</div>
+  </div>
+
+  <!-- PapaParse CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js" integrity="sha512-0VYwQyqg1l0rPjv3bTGyVtVwq0Z0t4j8M6x7sPpI0w0bbvF2qW5xv9Shv5kFqI4yXv3gkZ5WZz2sZB6l7tJ4Mw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script>
+    // === PASTE YOUR Google Sheets "Publish to web" CSV URL BELOW ===
+    // Example format:
+    // https://docs.google.com/spreadsheets/d/SHEET_ID/gviz/tq?tqx=out:csv&sheet=Sheet1
+    const CSV_URL = "PASTE_YOUR_CSV_URL_HERE";
+    // =================================================================
+
+    const listEl = document.getElementById('list');
+    const qEl = document.getElementById('q');
+    const countEl = document.getElementById('count');
+    const refreshBtn = document.getElementById('refresh');
+
+    let records = [];
+
+    function render(items) {
+      listEl.innerHTML = "";
+      countEl.textContent = items.length + " entries";
+      if(items.length === 0) {
+        listEl.innerHTML = "<div style='color:var(--muted)'>No results — try a broader search.</div>";
+        return;
+      }
+      items.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const logo = document.createElement('img');
+        logo.className = 'logo';
+        logo.onerror = () => { logo.src = 'https://via.placeholder.com/400x200?text=No+logo'; };
+        logo.src = r.logo_url || '';
+        const title = document.createElement('div');
+        title.innerHTML = `<div class="title"><div><div class="brand">${r.brand || ''}</div><div class="model">${r.model || ''}</div></div></div>`;
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.innerHTML = `
+          <div>${r.category || ''} • ${r.country_of_origin || ''} • ${r.established_year || ''}</div>
+          <div style="margin-top:6px"><a class="link" href="${r.website || '#'}" target="_blank" rel="noopener">Official</a> · <a class="link" href="${r.source_url || '#'}" target="_blank" rel="noopener">Source</a></div>
+        `;
+        const notes = document.createElement('div');
+        notes.className = 'small';
+        notes.textContent = (r.popular_models ? 'Popular: ' + r.popular_models : '') + (r.notes ? ' · ' + r.notes : '');
+        card.appendChild(logo);
+        card.appendChild(title);
+        card.appendChild(meta);
+        card.appendChild(notes);
+        listEl.appendChild(card);
+      });
+    }
+
+    function normalize(s) { return (s||'').toString().toLowerCase(); }
+
+    function doSearch() {
+      const q = normalize(qEl.value);
+      if(!q) return render(records);
+      const filtered = records.filter(r => {
+        return Object.values(r).some(v => normalize(v).includes(q));
+      });
+      render(filtered);
+    }
+
+    qEl.addEventListener('input', doSearch);
+    refreshBtn.addEventListener('click', loadCSV);
+
+    function loadCSV() {
+      if (CSV_URL.includes("PASTE_YOUR_CSV_URL_HERE")) {
+        listEl.innerHTML = "<div style='color:#ff8b8b'>⚠️ Put your Google Sheets CSV URL in the script (replace the placeholder).</div>";
+        countEl.textContent = "—";
+        return;
+      }
+      Papa.parse(CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(res) {
+          records = res.data.map(row => {
+            const obj = {};
+            Object.keys(row).forEach(k => obj[k.trim()] = (row[k] || '').toString().trim());
+            return obj;
+          });
+          render(records);
+        },
+        error: function(err) {
+          listEl.innerHTML = '<div style="color:#ff8b8b">Failed to load CSV — check CSV URL and permissions. Error: ' + err.message + '</div>';
+          countEl.textContent = "—";
+        }
+      });
+    }
+
+    // initial load (if CSV set)
+    loadCSV();
+  </script>
+</body>
+</html>
