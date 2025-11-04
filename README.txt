@@ -6,7 +6,7 @@ Files included:
 1) index.html
    - This is your website file (dark futuristic).
    - Open it in a text editor and replace the CSV_URL placeholder with your Google Sheets CSV link.
-     Search for the string: PASTE_YOUR_CSV_URL_HERE
+     Search for the string:https://docs.google.com/spreadsheets/d/e/2PACX-1vS4A9uRSbnibvXSQQlaHLCFBNUN9vIIs7aYp4kor5dm7EEcrExSHflbp4gNGjIlRTtRThJIJ1SpdNbe/pub?output=csv
      Replace the whole string inside quotes with your published CSV link:
        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?output=csv";
 
